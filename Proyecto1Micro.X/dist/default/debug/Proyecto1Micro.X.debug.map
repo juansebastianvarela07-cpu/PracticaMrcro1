@@ -4,18 +4,18 @@ Linker command line:
 
 -W-3 \
   --edf=C:\Program Files\Microchip\xc8\v4.00\pic\dat\20260614213421_en.msgs \
-  -cs -h+dist/default/debug\ProyectoMicro1.X.debug.sym \
-  --cmf=dist/default/debug\ProyectoMicro1.X.debug.cmf -z -Q18F4550 \
-  -oC:\Users\juans\AppData\Local\Temp\xcAsgpw.0\driver_tmp_3.o \
+  -cs -h+dist/default/debug\Proyecto1Micro.X.debug.sym \
+  --cmf=dist/default/debug\Proyecto1Micro.X.debug.cmf -z -Q18F4550 \
+  -oC:\Users\juans\AppData\Local\Temp\xcAs9m0.0\driver_tmp_3.o \
   --fixupoverflow=error -ver=XC8 PIC(R) Assembler --fixupoverflow=lstwarn \
-  -Mdist/default/debug/ProyectoMicro1.X.debug.map -E1 -ACODE=00h-07FFFh \
-  -ACONST=00h-07FFFh -ASMALLCONST=0800h-08FFhx120 \
-  -AMEDIUMCONST=0800h-07FFFh -ACOMRAM=00h-05Fh -AABS1=00h-07FFh \
-  -ABIGRAM=00h-07FFh -ARAM=060h-0FFh,0100h-01FFhx7 -ABANK0=060h-0FFh \
-  -ABANK1=0100h-01FFh -ABANK2=0200h-02FFh -ABANK3=0300h-03FFh \
-  -ABANK4=0400h-04FFh -ABANK5=0500h-05FFh -ABANK6=0600h-06FFh \
-  -ABANK7=0700h-07FFh -ASFR=0F60h-0FFFh -ABIGSFR=0F60h-0FFFh \
-  -AIDLOC=0200000h-0200007h -AEEDATA=0F00000h-0F000FFh \
+  -Mdist/default/debug/Proyecto1Micro.X.debug.map -E1 \
+  -ACODE=00h-07h,0Ch-07FFFh -ACONST=00h-07h,0Ch-07FFFh \
+  -ASMALLCONST=0800h-08FFhx120 -AMEDIUMCONST=0800h-07FFFh -ACOMRAM=00h-05Fh \
+  -AABS1=00h-07FFh -ABIGRAM=00h-07FFh -ARAM=060h-0FFh,0100h-01FFhx7 \
+  -ABANK0=060h-0FFh -ABANK1=0100h-01FFh -ABANK2=0200h-02FFh \
+  -ABANK3=0300h-03FFh -ABANK4=0400h-04FFh -ABANK5=0500h-05FFh \
+  -ABANK6=0600h-06FFh -ABANK7=0700h-07FFh -ASFR=0F60h-0FFFh \
+  -ABIGSFR=0F60h-0FFFh -AIDLOC=0200000h-0200007h -AEEDATA=0F00000h-0F000FFh \
   build/default/debug/newAsmTemplate.o 
 
 Object code version is 3.11
@@ -27,13 +27,16 @@ Machine type is 18F4550
                 Name                               Link     Load   Length Selector   Space Scale
 build/default/debug/newAsmTemplate.o
                 config                           300000   300000        E        0       4
-                main_code                          7F5A     7F5A       A6     3FAD       0
-                resetVec                           7F56     7F56        4     3FAB       0
+                main_code                          7FC0     7FC0       40     3FE0       0
+                intVec                             7FB4     7FB4        C     3FDA       0
+                resetVec                              0        0        4        0       0
+                udata_acs                             0        0       11        0       1
 
 TOTAL           Name                               Link     Load   Length     Space
         CLASS   CODE           
-                main_code                          7F5A     7F5A       A6         0
-                resetVec                           7F56     7F56        4         0
+                main_code                          7FC0     7FC0       40         0
+                intVec                             7FB4     7FB4        C         0
+                resetVec                              0        0        4         0
 
         CLASS   CONST          
 
@@ -42,6 +45,7 @@ TOTAL           Name                               Link     Load   Length     Sp
         CLASS   MEDIUMCONST    
 
         CLASS   COMRAM         
+                udata_acs                             0        0       11         1
 
         CLASS   ABS1           
 
@@ -80,8 +84,10 @@ TOTAL           Name                               Link     Load   Length     Sp
 
 SEGMENTS        Name                           Load    Length   Top    Selector   Space  Class
 
-                resetVec                       007F56  000004  007F5A      3FAB       0  CODE    
-                main_code                      007F5A  0000A6  008000      3FAD       0  CODE    
+                udata_acs                      000000  000011  000011         0       1  COMRAM  
+                resetVec                       000000  000004  000004         0       0  CODE    
+                intVec                         007FB4  00000C  007FC0      3FDA       0  CODE    
+                main_code                      007FC0  000040  008000      3FE0       0  CODE    
 
 
 UNUSED ADDRESS RANGES
@@ -95,33 +101,36 @@ UNUSED ADDRESS RANGES
         BANK5            000500-0005FF              100
         BANK6            000600-0006FF              100
         BANK7            000700-0007FF              100
-        BIGRAM           000000-0007FF              800
+        BIGRAM           000004-0007FF              7FC
         BIGSFR           000F60-000FFF               A0
-        CODE             000000-007F55             7F56
-        COMRAM           000000-00005F               60
-        CONST            000000-007F55             7F56
+        CODE             000004-000007                4
+                         00000C-007FB3             7FA8
+        COMRAM           000011-00005F               4F
+        CONST            000004-000007                4
+                         00000C-007FB3             7FA8
         EEDATA           F00000-F000FF              100
         IDLOC            200000-200007                8
-        MEDIUMCONST      000800-007F55             7756
+        MEDIUMCONST      000800-007FB3             77B4
         RAM              000060-0007FF              100
         SFR              000F60-000FFF               A0
-        SMALLCONST       000800-007F55              100
+        SMALLCONST       000800-007FB3              100
 
                                   Symbol Table
 
 __H__absolute__ __absolute__ 000000  __Hcode         code         000000
 __Hconfig       config       30000E  __Hdata         data         000000
-__Hedata        edata        000000  __Hmain_code    main_code    000000
-__HresetVec     resetVec     000000  __Hspace_0      (abs)        008000
-__Hspace_1      (abs)        000000  __Hspace_3      (abs)        000000
-__Hspace_4      (abs)        60000E  __Hudata        udata        000000
-__Hudata_acs    udata_acs    000000  __Hudata_bank0  udata_bank0  000000
-__Hudata_bank1  udata_bank1  000000  __Hudata_bank2  udata_bank2  000000
-__Hudata_bank3  udata_bank3  000000  __Hudata_bank4  udata_bank4  000000
-__Hudata_bank5  udata_bank5  000000  __Hudata_bank6  udata_bank6  000000
-__Hudata_bank7  udata_bank7  000000  __L__absolute__ __absolute__ 000000
-__Lcode         code         000000  __Lconfig       config       000000
-__Ldata         data         000000  __Ledata        edata        000000
+__Hedata        edata        000000  __HintVec       intVec       000000
+__Hmain_code    main_code    000000  __HresetVec     resetVec     000000
+__Hspace_0      (abs)        008000  __Hspace_1      (abs)        000011
+__Hspace_3      (abs)        000000  __Hspace_4      (abs)        60000E
+__Hudata        udata        000000  __Hudata_acs    udata_acs    000000
+__Hudata_bank0  udata_bank0  000000  __Hudata_bank1  udata_bank1  000000
+__Hudata_bank2  udata_bank2  000000  __Hudata_bank3  udata_bank3  000000
+__Hudata_bank4  udata_bank4  000000  __Hudata_bank5  udata_bank5  000000
+__Hudata_bank6  udata_bank6  000000  __Hudata_bank7  udata_bank7  000000
+__L__absolute__ __absolute__ 000000  __Lcode         code         000000
+__Lconfig       config       000000  __Ldata         data         000000
+__Ledata        edata        000000  __LintVec       intVec       000000
 __Lmain_code    main_code    000000  __LresetVec     resetVec     000000
 __Lspace_0      (abs)        000000  __Lspace_1      (abs)        000000
 __Lspace_3      (abs)        000000  __Lspace_4      (abs)        000000
@@ -130,6 +139,6 @@ __Ludata_bank0  udata_bank0  000000  __Ludata_bank1  udata_bank1  000000
 __Ludata_bank2  udata_bank2  000000  __Ludata_bank3  udata_bank3  000000
 __Ludata_bank4  udata_bank4  000000  __Ludata_bank5  udata_bank5  000000
 __Ludata_bank6  udata_bank6  000000  __Ludata_bank7  udata_bank7  000000
-__S0            (abs)        008000  __S1            (abs)        000000
+__S0            (abs)        008000  __S1            (abs)        000011
 __S3            (abs)        000000  isa$std         (abs)        000001
 isa$xinst       (abs)        000000  
