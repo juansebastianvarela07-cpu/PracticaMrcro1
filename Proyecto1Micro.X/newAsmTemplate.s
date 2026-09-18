@@ -199,10 +199,80 @@ Inicio:
     
     ;PRECARGAR TMR0 PARA EMPEZAR CON 8 ms
     MOVLW 0xFF          ; BYTE ALTO EEL TIMER0
-    MOVWF TMR0H, a        ; TMR0H = 0xFF
+    MOVWF TMR0H, a      ; TMR0H = 0xFF
     MOVLW 0x06          ;Byte bajo del TImer0
-    MOVWF TMR0L, a         ; TMR0L = 0x06
+    MOVWF TMR0L, a      ; TMR0L = 0x06
     ;AHORA MR0 = 0xFF06, DESBORDARÁ DESPUES DE 250 CUENTAS
 
-    Rutina_ISR:
+    ; ============================================================
+    ; SECCIÓN 6; CONFIGURACIÓN DE INTERRUPCIONES
+    ; ============================================================
 
+    ;REGISTRO INTCON2: CONFIGURAR INTERRUPCIONES EXTERNAS 
+    BCF INTCON2, 7, a    ; RBPU = 0: Habilita pull-ups internos de PORTB
+                         ; NECESARIO SI LOS PULSOS VAN A GND CON PULL-DOWN
+    
+    ;ESCOGE FLANCO DE SIPARO PARA LAS INTERRUPCIONES EXTERNAS
+    BSF INTCON2, 6, a    ; INTEDG0 = 1 POR FLANCO ASCENDENTES (0-1)
+    BSF INTCON2, 5, a
+    BSF INTCON2, 4, a
+    
+    ; CONSULTAR PULSADORES POR SI VAN A VDD (PULSADORES A NIVEL ALTO)
+    ; USAR EL FLANCO ASCENDENTE ()
+    ; SI VAN A GND (PULSADORES A NIVEL BAJO
+    ; CAMBIAR A FLACO DE BAJADA O DESCENDENTE (0) Y REVISAR LOS PULL-UPS
+    
+    ; LIMPIAR BANDERAS DE ITERRUPCIÓN ANTES DE HABILITARLAS
+    ; LIMPIAR PARA EVITAR FALSAS INTERRUPCIONES 
+    BCF  INTCON, 1, a     ; INT0IF = 0 (BANDERA DE INT0)
+    BCF  INTCON3, 0, a    ; INT1IF = 0 (BANDERA DE INT1)
+    BCF  INTCON3, 1, a    ; INT2IF = 0 (BANDERA DE INT0)
+    BCF  INTCON, 2, a     ; TMR0IF = 0 (BANDERA DE TIMER0)
+    BCF  PIR1, 6, a       ; AD0IF = 0 (BANDERA DE ADC TERMINADO)
+    
+    ;HABIITAR INTERRUPCIONES INDIVIDUALES
+    BSF  INTCON,4, a    ; INT0IF = 1 (HABILITAR INT0)
+    BCF  INTCON3, 3, a  ; INT1IF = 1 (HABILITAR INT1)
+    BSF  INTCON3, 4, a  ; INT2IF = 1 (HABILITAR INT0)
+    BSF  INTCON,2, a    ; TMR0IF = 1 (HABILITAR TIMER0)
+    BSF  PIE1, 6, a     ; AD0IF = 1  (HABILITAR ADC)
+    
+    ;HABILITAR INTERRUPCIONES GLOBALES
+    BSF  INTCON, 6, a   ; PEIE = 1 (PERIPHERAL INTERRUP ENABLE)
+    ;                   PERMITE QUE LOS PERIFÉRICOS CAUSEN INTERRUPCIONES
+    BSF  INTCON, 7, a   ; GIE = 1 (GLOBAL INTERRUPT ENABLE)
+    ;                   PERMITE QUE CUALQUIER INTERRUPCIÓN EJECUTE
+    
+;===============================================
+; BUCLE PRINCIPAL
+;===============================================
+; SE ESPERA QUE EN ESTE PROGRAMA PRICIPAL EL ADC ENTREGUE DATOS
+; IENTRAS ESPERA, LAS INTERRUPCIONES OCURREN INDEPENDIENTEMENTE, ES DECIR, EN PARALELO
+    
+Loop_Principal:
+        ; WAIT: ESPERAR A QUE EL ADC HAYA TOMADO UNA NUEVA LECTURA
+        ; FLAG_NUEVO_DATO SE PONE A 1 EN ISR_ADX CUANDO LA CONVERSIÓN TERMINA
+    
+     BTFSS FLAG_NUEVO_DATO, 0, a ;FLAG_NUEVO_DATO BIT 0 =1?
+     GOTO Loop_Principal          ; SI NO (ESTA EN 0), VUELVE A PREGUNTAR
+                                  ; ESTO CREA UN BUCLE QUE ESPERA EL DATO
+    BCF FLAG_NUEVO_DATO, 0, a     ;SI SE CUMPLE, SE LIMPIA LA BANDERA PARA LA SIGUIENTE LECTURA
+    
+    ; ============================================================
+    ; SECCIÓN 1: CONVERTIR VALOR ADC A TEMPERATURA EN CELSIUS
+    ; ============================================================
+     
+     ; Fórmula simplificada:
+    ; El LM35 entrega 10 mV por °Celsius
+    ; ADC de 10 bits con Vref = 5V:
+    ;   1 LSB = 5V / 1024 ? 4.88 mV
+    ;   Temp(°C) ? (Valor ADC × 5) / (1024 × 0.01) = Valor ADC / 2
+    ;
+    ; Aproximación usada aquí: Divides por 2 (desplazamiento a la derecha)
+    
+    ; Instrucción RRCF: Rotate Right through Carry
+    ; Efecto: Divide el número por 2 (SEGÚN CLAUDE)
+ 
+    BCF STATUS, 0, a 
+    
+    Rutina_ISR:
