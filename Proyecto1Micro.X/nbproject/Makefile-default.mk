@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=newAsmTemplate.s
+SOURCEFILES_QUOTED_IF_SPACED=Practica1_ControlTemperatura.s
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/newAsmTemplate.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/newAsmTemplate.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/Practica1_ControlTemperatura.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/Practica1_ControlTemperatura.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/newAsmTemplate.o
+OBJECTFILES=${OBJECTDIR}/Practica1_ControlTemperatura.o
 
 # Source Files
-SOURCEFILES=newAsmTemplate.s
+SOURCEFILES=Practica1_ControlTemperatura.s
 
 
 
@@ -89,21 +89,21 @@ FINAL_IMAGE_NAME_MINUS_EXTENSION=${DISTDIR}/Proyecto1Micro.X.${IMAGE_TYPE}
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: pic-as-assembler
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/newAsmTemplate.o: newAsmTemplate.s  nbproject/Makefile-${CND_CONF}.mk 
+${OBJECTDIR}/Practica1_ControlTemperatura.o: Practica1_ControlTemperatura.s  nbproject/Makefile-${CND_CONF}.mk 
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/newAsmTemplate.o 
+	@${RM} ${OBJECTDIR}/Practica1_ControlTemperatura.o 
 	${MP_AS} -mcpu=PIC18F4550 -c \
-	-o ${OBJECTDIR}/newAsmTemplate.o \
-	newAsmTemplate.s \
+	-o ${OBJECTDIR}/Practica1_ControlTemperatura.o \
+	Practica1_ControlTemperatura.s \
 	 -D__DEBUG=1   -mdfp="${DFP_DIR}/xc8"  -misa=std -msummary=+mem,-psect,-class,-hex,-file,-sha1,-sha256,-xml,-xmlfull -fmax-errors=20 -mwarn=0 -xassembler-with-cpp
 	
 else
-${OBJECTDIR}/newAsmTemplate.o: newAsmTemplate.s  nbproject/Makefile-${CND_CONF}.mk 
+${OBJECTDIR}/Practica1_ControlTemperatura.o: Practica1_ControlTemperatura.s  nbproject/Makefile-${CND_CONF}.mk 
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/newAsmTemplate.o 
+	@${RM} ${OBJECTDIR}/Practica1_ControlTemperatura.o 
 	${MP_AS} -mcpu=PIC18F4550 -c \
-	-o ${OBJECTDIR}/newAsmTemplate.o \
-	newAsmTemplate.s \
+	-o ${OBJECTDIR}/Practica1_ControlTemperatura.o \
+	Practica1_ControlTemperatura.s \
 	  -mdfp="${DFP_DIR}/xc8"  -misa=std -msummary=+mem,-psect,-class,-hex,-file,-sha1,-sha256,-xml,-xmlfull -fmax-errors=20 -mwarn=0 -xassembler-with-cpp
 	
 endif
