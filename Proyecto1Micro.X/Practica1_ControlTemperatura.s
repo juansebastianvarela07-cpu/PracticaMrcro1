@@ -77,11 +77,9 @@ Inicio:
     CLRF    ESTADO_ALARMA , a          ;CESTADO_ALARMA = 0 (ALARMA APAGADA)
     CLRF    ESTADO_VENTILADOR, a       ;ESTADO_VENTILADOR = 0 (VENTILADOR APAGADO)
     CLRF    MODO_UNIDAD, a            ;CONTADOR_ADC = 0
-    CLRF    CONTADOR_DEBOUNCE, a         ; CONDOR_DEBOUNCE = 0
-    CLRF    CONTADOR_MUX, a            ; CONTADOR_MUX = 0
+    CLRF    CONTADOR_ADC, a         ; CONDOR_DEBOUNCE = 0
     CLRF    DISP_SEL, a                ; DISP_SEL = 0 (EMPEZAR CON UNIDADES
     CLRF    FLAG_NUEVO_DATO,a          ; FLAG_NUEVO_DATO = 0 (NO HAY DATO LISTO)
-    CLRF    FLAG_DEBOUNCE, a           ; FLAS_DEBOUNCE = 0 (ANTIREBOTE INACTIVO)
     
     ; ============================================================
     ; SECCIÓN 3: CONFIGURACIÓN DE PUERTOS E/S (TRIS = TRisate)
@@ -171,8 +169,8 @@ Inicio:
     ;   - 0 = Modo 16 bits ? Máximo conteo = 65,536 (CORRECTA para este sistema)
     ; (SEGÚN CLAUDE)
     
-    MOVLW 11000101B      
-    MOVWF T0CON,a 
+    MOVLW   11010101B
+    MOVWF   T0CON, a
     
     ; ; Desglose de T0CON = 11000101B:
     ; Bit 7 (TMR0ON) = 1: Timer encendido
