@@ -1,12 +1,12 @@
-Microchip MPLAB XC8 PIC(R) Assembler V4.00
+Microchip MPLAB XC8 PIC(R) Assembler V3.10
 
 Linker command line:
 
 -W-3 \
-  --edf=C:\Program Files\Microchip\xc8\v4.00\pic\dat\20260614213421_en.msgs \
+  --edf=C:\Program Files\Microchip\xc8\v3.10\pic\dat\20250813170317_en.msgs \
   -cs -h+dist/default/production\Proyecto1Micro.X.production.sym \
   --cmf=dist/default/production\Proyecto1Micro.X.production.cmf -z \
-  -Q18F4550 -oC:\Users\juans\AppData\Local\Temp\xcAs5ac.0\driver_tmp_3.o \
+  -Q18F4550 -oC:\Users\juans\AppData\Local\Temp\xcAs77g.0\driver_tmp_3.o \
   --fixupoverflow=error -ver=XC8 PIC(R) Assembler --fixupoverflow=lstwarn \
   -Mdist/default/production/Proyecto1Micro.X.production.map -E1 \
   -ACODE=00h-07h,0Ch-07FFFh -ACONST=00h-07h,0Ch-07FFFh \
@@ -16,7 +16,7 @@ Linker command line:
   -ABANK3=0300h-03FFh -ABANK4=0400h-04FFh -ABANK5=0500h-05FFh \
   -ABANK6=0600h-06FFh -ABANK7=0700h-07FFh -ASFR=0F60h-0FFFh \
   -ABIGSFR=0F60h-0FFFh -AIDLOC=0200000h-0200007h -AEEDATA=0F00000h-0F000FFh \
-  build/default/production/newAsmTemplate.o 
+  build/default/production/Practica1_ControlTemperatura.o 
 
 Object code version is 3.11
 
@@ -25,17 +25,17 @@ Machine type is 18F4550
 
 
                 Name                               Link     Load   Length Selector   Space Scale
-build/default/production/newAsmTemplate.o
+build/default/production/Practica1_ControlTemperatura.o
                 config                           300000   300000        E        0       4
-                main_code                          7F96     7F96       6A     3FCB       0
-                intVec                             7F8A     7F8A        C     3FC5       0
+                main_code                          7E82     7E82      17E     3F41       0
+                intVec                             7E76     7E76        C     3F3B       0
                 resetVec                              0        0        4        0       0
                 udata_acs                             0        0       11        0       1
 
 TOTAL           Name                               Link     Load   Length     Space
         CLASS   CODE           
-                main_code                          7F96     7F96       6A         0
-                intVec                             7F8A     7F8A        C         0
+                main_code                          7E82     7E82      17E         0
+                intVec                             7E76     7E76        C         0
                 resetVec                              0        0        4         0
 
         CLASS   CONST          
@@ -86,8 +86,8 @@ SEGMENTS        Name                           Load    Length   Top    Selector 
 
                 udata_acs                      000000  000011  000011         0       1  COMRAM  
                 resetVec                       000000  000004  000004         0       0  CODE    
-                intVec                         007F8A  00000C  007F96      3FC5       0  CODE    
-                main_code                      007F96  00006A  008000      3FCB       0  CODE    
+                intVec                         007E76  00000C  007E82      3F3B       0  CODE    
+                main_code                      007E82  00017E  008000      3F41       0  CODE    
 
 
 UNUSED ADDRESS RANGES
@@ -104,16 +104,16 @@ UNUSED ADDRESS RANGES
         BIGRAM           000004-0007FF              7FC
         BIGSFR           000F60-000FFF               A0
         CODE             000004-000007                4
-                         00000C-007F89             7F7E
+                         00000C-007E75             7E6A
         COMRAM           000011-00005F               4F
         CONST            000004-000007                4
-                         00000C-007F89             7F7E
+                         00000C-007E75             7E6A
         EEDATA           F00000-F000FF              100
         IDLOC            200000-200007                8
-        MEDIUMCONST      000800-007F89             778A
+        MEDIUMCONST      000800-007E75             7676
         RAM              000060-0007FF              100
         SFR              000F60-000FFF               A0
-        SMALLCONST       000800-007F89              100
+        SMALLCONST       000800-007E75              100
 
                                   Symbol Table
 

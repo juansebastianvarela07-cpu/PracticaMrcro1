@@ -34,13 +34,16 @@
 	DIGITO_UNID:	   DS 1 ; UNIDADES (0-9) PARA EL DISPLAY 7 SEG
     ;===== CONTADORES Y CONTROL DE TIEMPO ======
 	CONTADOR_ADC:      DS 1 ; TEMPORIZADOR SECUNDARIO PARA LANZAR LA LECTURA
-    ;===== CONTROL DE DISPLAY MULTIPLEXADOS ======
-        DISP_SEL:          DS 1 ; BIT 0: 0 = UNIDADES (RD4), 1 = DECENAS (RD5)
+    ;====== PATRON PARA LOS DISPLAYS =======
+        PATRON_DEC:        DS 1 ; LEDS DE LAS DECENAS DECODIFICADOS
+        PATRON_UNID:       DS 1 ; LEDS DE LAS UNIDADES DECODIFICADOS
     ;===== BANDERAS DE CONTROL GENERAL ======
-        FLAG_NUEVO_DATO:   DS 1 ; BIT 0: 1 CUANDO ADC TIENE DATO LISTO NUEVO     
+        FLAG_LEER_ADC:     DS 1 ; BIT 0: 1 CUANDO ADC TIENE DATO LISTO NUEVO     
     ;===== VARIABLES TEMPORALES PARA OPERACIONES ======
         MATH_TEMP:         DS 1 ; VARIABLE TEMPORAL PARA OPERACIONES MATEMÁTICAS
-    
+    ;===== DELAYS PARA LOS DISPLAYS =======
+        DELAY1:            DS 1 ;VARIABLE PARA EL MICRO RETARDO DEL DISPLAY
+        DELAY2:            DS 1;V ARIABLE PARA EL MICRO RETARDO DEL DISPLAY
  ;===============================================
  ; VECTOR DE RESET
  ;===============================================
@@ -53,7 +56,7 @@ PSECT resetVec, class=CODE, reloc=2
  ;===============================================
 PSECT intVec, class=CODE, reloc=2
  ORG  0x0008
- GOTO Rutina_ISR      ;SALTA A LA RUTINA DE SERVICIO DE INTERRUPCIÓN
+ GOTO Rutina_ISR      ;SALTA A LAS INTERRUPCIONES
  
  ;===============================================
  ; PROGRAMA PRINCIPAL
@@ -76,13 +79,11 @@ Inicio:
 
     CLRF    ESTADO_ALARMA , a          ;CESTADO_ALARMA = 0 (ALARMA APAGADA)
     CLRF    ESTADO_VENTILADOR, a       ;ESTADO_VENTILADOR = 0 (VENTILADOR APAGADO)
-    CLRF    MODO_UNIDAD, a            ;CONTADOR_ADC = 0
-    CLRF    CONTADOR_DEBOUNCE, a         ; CONDOR_DEBOUNCE = 0
-    CLRF    CONTADOR_MUX, a            ; CONTADOR_MUX = 0
-    CLRF    DISP_SEL, a                ; DISP_SEL = 0 (EMPEZAR CON UNIDADES
-    CLRF    FLAG_NUEVO_DATO,a          ; FLAG_NUEVO_DATO = 0 (NO HAY DATO LISTO)
-    CLRF    FLAG_DEBOUNCE, a           ; FLAS_DEBOUNCE = 0 (ANTIREBOTE INACTIVO)
-    
+    CLRF    MODO_UNIDAD, a             ;CONTADOR_ADC = 0
+    CLRF    FLAG_LEER_ADC,a            ; FLAG_LEER_ADC = 0 
+    CLRF    PATRON_DEC, a              ; PATRON_DEC = 0 
+    CLRF    PATRON_UNID, a             ; PATRON_UNID = 0
+   
     ; ============================================================
     ; SECCIÓN 3: CONFIGURACIÓN DE PUERTOS E/S (TRIS = TRisate)
     ; ============================================================
@@ -95,6 +96,10 @@ Inicio:
     ;RD4: SELECTOR DISPLAY 1 (UNIDADES - ACTIVO EN ALTO
     ;RD5; SELECTOR DISPLAY 2 (DECENAS) - ACTIVO EN ALTO 
     
+    ; PUERTO C: SALIDAS DE HABILITADORES DISPLAY
+    BCF     TRISC, 0, a          ; RC0 (PIN 15) SALIDA DE TRANSISTOR DECENAAS
+    BCF     TRISC, 1, a          ; RC1 (PIN 16 SALIDA PARA TRANSISTOR UNIDADES
+    BCF     LATC, 1, a
     ;PUERTOS E: SALIDAS (ALARMA Y VENTILADOR)
     BCF     TRISE, 0, a      ; RE0 COMO SALIDA (LED ALARMA) 
     BCF     LATE, 0, a       ; RE0 = 0 (LED APAGADO INICIALMENTE)
@@ -114,43 +119,17 @@ Inicio:
     ; ============================================================
     ; SECCIÓN 4: CONFIGURAR MÓDULO ADC
     ; ============================================================
-    ; Analógico-Digital Converter: Convierte voltaje analógico a valor digital
-    ; Entrada: RA0 conectado a sensor LM35
-    ; Rango: 0 a 5V ? 0 a 1023 (10 bits) (SEGÚN CLAUDE)
-    
-    ; Registro ADCON1: Configurar pines analógicos vs digitales
-    ; PCFG3:PCFG0 = 1110 ? AN0 (RA0) es analógico, resto digital
-    ; VCFG1:VCFG0 = 00 ? Vref+ = VDD (5V), Vref- = VSS (0V)
-    ; Valor: 0x0E = 00001110B (SEGÚN CLAUDE)
+   
 
 
     MOVLW 0x0E           ; CARGA 0x0E (14 DECIMAL) EN W
     MOVWF ADCON1, a         ; ADCON1 = 0x0E (AN0 ANALÓGICO)
     
-    ; Registro ADCON2: Configurar tiempo de conversión
-    ; ADFM = 1 (bit 7): Resultado justificado a la DERECHA
-    ;   - ADRESH contiene bits 9:2 del resultado
-    ;   - ADRESL contiene bits 1:0 (en los bits más altos)
-    ;   - Esto permite leer 8 bits significativos desde ADRESH directamente
-    ; ACQT = 001 (bits 5:3): Tiempo de adquisición = 2 TAD
-    ; ADCS = 010 (bits 2:0): Frecuencia ADC = FOSC/32
-    ;   - Fosc/32 = 8MHz / 32 = 250 kHz (dentro del rango 200-400 kHz recomendado)
-    ; Valor: 10001010B = 0x8A (SEGÚN CLAUDE)
     
-    MOVLW 10001010B          ; CARGA 10001010B EN W
-    MOVWF ADCON2, a          ; ADCON2 = 10001010B
+    MOVLW 10100010B          ; CARGA 10100010B EN W
+    MOVWF ADCON2, a          ; ADCON2 = 10100010B
  
-    ; CÁLCULO DE TIEMPO DE CONVERSIÓN:
-    ; TIEMPO TOTAL = (TIEMPO DE ADQUISICIÓN) + (12 x TADC)
-    ; = (2 x 4us) + (12 x 4us) = 8us + 48us = 56us
-    ; Frecuencia 0 1/56us = 17.8KHz conversiones por segundo
-    
-    ; Registro ADCON0: Seleccionar canal y activar ADC
-    ; CH3:CH0 = 0000 ? Canal 0 (AN0 = RA0)
-    ; GODONE = 0 ? ADC no activo (se dispara desde ISR_TMR0)
-    ; ADON = 1 ? ADC habilitado
-    ; Valor: 00000001B (SEGÚN CLAUDE)
-    
+
     MOVLW 00000001B      ; CARGA 00000001B EN W
     MOVWF ADCON0, a      ; ADCON0 = 00000001B
 
@@ -158,48 +137,8 @@ Inicio:
     ;SECCIÓN 5: CONFIGURAR EL TIMER0
     ; ============================================================
       
-    ; Timer0: Temporizador que genera interrupciones periódicas
-    ; Funciones:
-    ; 1. Multiplexar displays 7 segmentos (cada ~8 ms)
-    ; 2. Espaciar lecturas del ADC (cada ~160 ms)
-    
-    ; *** CORRECCIÓN IMPORTANTE (v1.1) ***
-    ; Valor ANTERIOR (INCORRECTO): 11010101B
-    ; Valor CORRECTO: 11000101B
-    ; La diferencia está en el bit 6 (T08BIT):
-    ;   - 1 = Modo 8 bits ? Máximo conteo = 256
-    ;   - 0 = Modo 16 bits ? Máximo conteo = 65,536 (CORRECTA para este sistema)
-    ; (SEGÚN CLAUDE)
-    
-    MOVLW 11000101B      
+    MOVLW 10000101B      
     MOVWF T0CON,a 
-    
-    ; ; Desglose de T0CON = 11000101B:
-    ; Bit 7 (TMR0ON) = 1: Timer encendido
-    ; Bit 6 (T08BIT) = 1 (ORIGINAL INCORRECTO): Modo 8 bits
-    ; Bit 6 (T08BIT) = 0 (CORRECCIÓN): Modo 16 bits ? USAR ESTO
-    ; Bit 5 (TOCS) = 0: Reloj interno (Fosc/4)
-    ; Bit 4 (TOSE) = 0: Incrementa en flanco ascendente
-    ; Bit 3 (PSA) = 1: Prescaler habilitado
-    ; Bits 2:0 (PS) = 101: Prescaler 1:64
-    
-    ; Cálculo del período:
-    ; Frecuencia de incremento = (Fosc/4) / Prescaler
-    ;                          = (8 MHz / 4) / 64
-    ;                          = 2 MHz / 64
-    ;                          = 31.25 kHz
-    ; Período máximo (65,536 cuentas) = 65,536 / 31.25 kHz = 2.097 segundos
-    
-    ; Para interrupciones cada ~8 ms (para multiplexado):
-    ; Cuentas = 8 ms × 31.25 kHz = 250
-    ; Precarga = 65,536 - 250 = 65,286 = 0xFF06 (SEGÚN CLAUDE)
-    
-    ;PRECARGAR TMR0 PARA EMPEZAR CON 8 ms
-    MOVLW 0xFF          ; BYTE ALTO EEL TIMER0
-    MOVWF TMR0H, a      ; TMR0H = 0xFF
-    MOVLW 0x06          ;Byte bajo del TImer0
-    MOVWF TMR0L, a      ; TMR0L = 0x06
-    ;AHORA MR0 = 0xFF06, DESBORDARÁ DESPUES DE 250 CUENTAS
 
     ; ============================================================
     ; SECCIÓN 6; CONFIGURACIÓN DE INTERRUPCIONES
@@ -225,14 +164,14 @@ Inicio:
     BCF  INTCON3, 0, a    ; INT1IF = 0 (BANDERA DE INT1)
     BCF  INTCON3, 1, a    ; INT2IF = 0 (BANDERA DE INT0)
     BCF  INTCON, 2, a     ; TMR0IF = 0 (BANDERA DE TIMER0)
-    BCF  PIR1, 6, a       ; AD0IF = 0 (BANDERA DE ADC TERMINADO)
+ 
     
     ;HABIITAR INTERRUPCIONES INDIVIDUALES
     BSF  INTCON,4, a    ; INT0IF = 1 (HABILITAR INT0)
     BCF  INTCON3, 3, a  ; INT1IF = 1 (HABILITAR INT1)
     BSF  INTCON3, 4, a  ; INT2IF = 1 (HABILITAR INT0)
     BSF  INTCON,2, a    ; TMR0IF = 1 (HABILITAR TIMER0)
-    BSF  PIE1, 6, a     ; AD0IF = 1  (HABILITAR ADC)
+ 
     
     ;HABILITAR INTERRUPCIONES GLOBALES
     BSF  INTCON, 6, a   ; PEIE = 1 (PERIPHERAL INTERRUP ENABLE)
@@ -247,29 +186,218 @@ Inicio:
 ; IENTRAS ESPERA, LAS INTERRUPCIONES OCURREN INDEPENDIENTEMENTE, ES DECIR, EN PARALELO
     
 Loop_Principal:
-        ; WAIT: ESPERAR A QUE EL ADC HAYA TOMADO UNA NUEVA LECTURA
-        ; FLAG_NUEVO_DATO SE PONE A 1 EN ISR_ADX CUANDO LA CONVERSIÓN TERMINA
+    ;===== MULTIPLEXADO RAPIDO EN EL BUCLE ======
+    ; APAGAR LOS DISPLAYS
     
-     BTFSS FLAG_NUEVO_DATO, 0, a ;FLAG_NUEVO_DATO BIT 0 =1?
-     GOTO Loop_Principal          ; SI NO (ESTA EN 0), VUELVE A PREGUNTAR
-                                  ; ESTO CREA UN BUCLE QUE ESPERA EL DATO
-    BCF FLAG_NUEVO_DATO, 0, a     ;SI SE CUMPLE, SE LIMPIA LA BANDERA PARA LA SIGUIENTE LECTURA
+    BCF    LATC, 0, a
+    BCF    LATC, 1, a
     
-    ; ============================================================
-    ; SECCIÓN 1: CONVERTIR VALOR ADC A TEMPERATURA EN CELSIUS
-    ; ============================================================
-     
-     ; Fórmula simplificada:
-    ; El LM35 entrega 10 mV por °Celsius
-    ; ADC de 10 bits con Vref = 5V:
-    ;   1 LSB = 5V / 1024 ? 4.88 mV
-    ;   Temp(°C) ? (Valor ADC × 5) / (1024 × 0.01) = Valor ADC / 2
-    ;
-    ; Aproximación usada aquí: Divides por 2 (desplazamiento a la derecha)
+    ;ENCENDER UNIDADES
+    MOVFF  PATRON_UNID, LATD     ;CARGAR LOS LED DE UNIDADES
+    BSF    LATC, 1, a            ; ACTIVAR TRANSISTOR UNIDADES
+    CALL   RETARDO_MUX           ; ESPERAR UNOS MILESEGUNDOS
+    BCF    LATC, 1, a            ; APAGAR UNIDADES
     
-    ; Instrucción RRCF: Rotate Right through Carry
-    ; Efecto: Divide el número por 2 (SEGÚN CLAUDE)
+    ; ENCENDER DECENAS
+    MOVFF  PATRON_DEC, LATD      ;CARGAR LOS LED DE DECENAS
+    BSF    LATC, 0, a            ; ACTIVAR TRANSISTOR DECENAS
+    CALL   RETARDO_MUX           ; ESPERAR UNOS MILESEGUNDOS
+    BCF    LATC, 0, a            ; APAGAR UNIDADES
+    
+    ;==== FIN DEL MULTIPLEXADO =======
+    
+    ;REVISAR SI EL TIMER0 DIO LA ORDEN AL SENSOR
+    BTFSS FLAG_LEER_ADC, 0, a
+    GOTO Loop_Principal         ; SI NO HAY ORDEN SEGUIR MULTPLLEXADO
+    
+   
+    ; INICIAR CONVERSION ADC
+    BSF  ADCON0, 1, a
+Esperar_ADC:
+    BTFSC  ADCON0, 1, a
+    GOTO   Esperar_ADC
+    
+    MOVFF   ADRESL, VALOR_ADC_L
+    MOVFF   ADRESH, VALOR_ADC_H
+    
+    ; CONVERTIR A CELSIUS 
+    BCF     STATUS, 0, a
+    RRCF    VALOR_ADC_H, F, a
+    RRCF    VALOR_ADC_L, W, a
+    MOVWF   TEMP_CELSIUS, a
+    
+Seleccionar_Celsius:
+    MOVF    TEMP_CELSIUS, W, a
+    MOVWF   TEMP_MOSTRAR, a
+    GOTO    DESCOMPONER_BCD
+    
+Calcular_Fahrenheit:
+    MOVF    TEMP_CELSIUS, W, a
+    MULLW   9
+    MOVFF   PRODL, MATH_TEMP
+    MOVFF   PRODH, VALOR_ADC_H
+    CLRF    TEMP_FAHRENHEIT, a
+    
+RESTAR_5:
+    MOVLW   5 
+    SUBWF   MATH_TEMP, F, a
+    MOVLW   0
+    SUBWF   VALOR_ADC_H, F, a
+    BNC     FIN_DIV5
+    INCF    TEMP_FAHRENHEIT, F, a
+    GOTO    RESTAR_5
+    
+FIN_DIV5:
+    MOVLW   32
+    ADDWF   TEMP_FAHRENHEIT, W, a
+    MOVWF   TEMP_MOSTRAR, a
+    
+DESCOMPONER_BCD:
+    ;SEPARAR DECENAS Y UNIDADES 
+    MOVF    TEMP_MOSTRAR, W, a
+    CLRF    DIGITO_DEC, a
+BUCLE_RESTAR_10:
+    MOVLW   10
+    SUBWF   TEMP_MOSTRAR, W, a
+    BNC     FIN_BCD
+    MOVWF   TEMP_MOSTRAR, a
+    INCF    DIGITO_DEC, F, a
+    GOTO    BUCLE_RESTAR_10
+    
+FIN_BCD:
+    MOVF    TEMP_MOSTRAR, W , a 
+    MOVWF   DIGITO_UNID, a
+    
+    ; TRADUCIR A NÚMEROS
+    MOVFF   DIGITO_UNID, MATH_TEMP
+    CALL    DECODIFICADOR_7SEG
+    MOVWF   PATRON_DEC, a
+    
+    GOTO    Loop_Principal
+    
+    ;FALTA AÑADIR LOS COMETARIOS A TODO ESTO
+    
+;===============================================
+; SUBRUTINA DE MICRO RETARDO PARA EL MULTIPLEXADO
+;===============================================
+   
+RETARDO_MUX:
+    MOVLW   2.4901
+    MOVWF   DELAY1, a
+LOOP_M1:
+    MOVLW   166
+    MOVWF   DELAY2, a
+LOOP_M2:
+    DECFSZ  DELAY2, F, c
+    GOTO    LOOP_M2
+    DECFSZ  DELAY1, F, c
+    GOTO    LOOP_M1
+    RETURN
+
+;================================================
+; RUTINA DE INTERRUPCIONES
+;================================================
+
+Rutina_ISR:
+    BTFSC   INTCON, 1, a
+    GOTO    ISR_INT0
+    BTFSC   INTCON3, 0, a
+    GOTO    ISR_INT1
+    BTFSC   INTCON3, 1, a
+    GOTO    ISR_INT2
+    BTFSC   INTCON, 2, a
+    GOTO    ISR_TMR0
+    RETFIE  1
+    
+ISR_INT0:
+    BCF     INTCON, 1, a
+    BTG     ESTADO_ALARMA, 0 , a
+    BTG     LATE, 0 , a
+    RETFIE  1
+ISR_INT1:
+    BCF     INTCON3, 0, a
+    BTG     ESTADO_VENTILADOR, 0 , a
+    BTG     LATE, 1 , a
+    RETFIE  1
+ISR_INT2:
+    BCF     INTCON3, 1, a
+    BTG     MODO_UNIDAD, 0 , a
+    RETFIE  1    
+ISR_TMR0:
+    ; EL TIMER0 AVISA QUE ES HORA DE LEER EL SENSOR 
+    BCF     INTCON, 2, a
+    BTG     FLAG_LEER_ADC, 0 , a
+    RETFIE  1   
+
+;===============================================
+; DECODIFICADOR 7 SEGMENTOS
+;===============================================
+DECODIFICADOR_7SEG:
+    MOVLW   0
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   00111111B
+    
+    MOVLW   1
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   00000110B
+    
+    MOVLW   2
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01011011B
+  
+    MOVLW   3
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01001111B
+  
+    MOVLW   4
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01100110B
+  
+    MOVLW   5
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01101101B
+  
+    MOVLW   6
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01111101B
+    
+    MOVLW   7
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   00000111B
+  
+    MOVLW   8
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01111111B
+  
+    MOVLW   9
+    SUBWF   MATH_TEMP, W, a
+    BTFSC   STATUS, 2, a
+    RETLW   01101111B
+  
+    RETLW   00000000B
+    
+    END
+  
+  
+  
+  
+  
+   
+    
+    
+    
  
-    BCF STATUS, 0, a 
+
     
-    Rutina_ISR:
+   
+    
+  
