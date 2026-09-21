@@ -3,8 +3,8 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>PRUEBADE SISIRVE</name>
-            <creation-uuid>dc7be5ec-2aa9-4d77-bce8-61cf89a701c0</creation-uuid>
+            <name>Proyecto1Micro</name>
+            <creation-uuid>fe363e42-679e-4db8-981b-831356411eda</creation-uuid>
             <make-project-type>0</make-project-type>
             <sourceEncoding>ISO-8859-1</sourceEncoding>
             <make-dep-projects/>
