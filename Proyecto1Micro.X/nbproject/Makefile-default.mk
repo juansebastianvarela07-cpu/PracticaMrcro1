@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=newAsmTemplate1.s
+SOURCEFILES_QUOTED_IF_SPACED=newAsmTemplate2.s
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/newAsmTemplate1.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/newAsmTemplate1.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/newAsmTemplate2.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/newAsmTemplate2.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/newAsmTemplate1.o
+OBJECTFILES=${OBJECTDIR}/newAsmTemplate2.o
 
 # Source Files
-SOURCEFILES=newAsmTemplate1.s
+SOURCEFILES=newAsmTemplate2.s
 
 
 
@@ -89,21 +89,21 @@ FINAL_IMAGE_NAME_MINUS_EXTENSION=${DISTDIR}/Proyecto1Micro.X.${IMAGE_TYPE}
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: pic-as-assembler
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/newAsmTemplate1.o: newAsmTemplate1.s  nbproject/Makefile-${CND_CONF}.mk 
+${OBJECTDIR}/newAsmTemplate2.o: newAsmTemplate2.s  nbproject/Makefile-${CND_CONF}.mk 
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/newAsmTemplate1.o 
+	@${RM} ${OBJECTDIR}/newAsmTemplate2.o 
 	${MP_AS} -mcpu=PIC18F4550 -c \
-	-o ${OBJECTDIR}/newAsmTemplate1.o \
-	newAsmTemplate1.s \
+	-o ${OBJECTDIR}/newAsmTemplate2.o \
+	newAsmTemplate2.s \
 	 -D__DEBUG=1   -mdfp="${DFP_DIR}/xc8"  -misa=std -msummary=+mem,-psect,-class,-hex,-file,-sha1,-sha256,-xml,-xmlfull -fmax-errors=20 -mwarn=0 -xassembler-with-cpp
 	
 else
-${OBJECTDIR}/newAsmTemplate1.o: newAsmTemplate1.s  nbproject/Makefile-${CND_CONF}.mk 
+${OBJECTDIR}/newAsmTemplate2.o: newAsmTemplate2.s  nbproject/Makefile-${CND_CONF}.mk 
 	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/newAsmTemplate1.o 
+	@${RM} ${OBJECTDIR}/newAsmTemplate2.o 
 	${MP_AS} -mcpu=PIC18F4550 -c \
-	-o ${OBJECTDIR}/newAsmTemplate1.o \
-	newAsmTemplate1.s \
+	-o ${OBJECTDIR}/newAsmTemplate2.o \
+	newAsmTemplate2.s \
 	  -mdfp="${DFP_DIR}/xc8"  -misa=std -msummary=+mem,-psect,-class,-hex,-file,-sha1,-sha256,-xml,-xmlfull -fmax-errors=20 -mwarn=0 -xassembler-with-cpp
 	
 endif
