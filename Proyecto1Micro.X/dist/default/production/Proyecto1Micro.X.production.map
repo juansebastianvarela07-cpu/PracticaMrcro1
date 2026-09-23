@@ -6,7 +6,7 @@ Linker command line:
   --edf=C:\Program Files\Microchip\xc8\v3.10\pic\dat\20250813170317_en.msgs \
   -cs -h+dist/default/production\Proyecto1Micro.X.production.sym \
   --cmf=dist/default/production\Proyecto1Micro.X.production.cmf -z \
-  -Q18F4550 -oC:\Users\juans\AppData\Local\Temp\xcAsig0.0\driver_tmp_3.o \
+  -Q18F4550 -oC:\Users\juans\AppData\Local\Temp\xcAs5pw.0\driver_tmp_3.o \
   --fixupoverflow=error -ver=XC8 PIC(R) Assembler --fixupoverflow=lstwarn \
   -Mdist/default/production/Proyecto1Micro.X.production.map -E1 \
   -ACODE=00h-07h,0Ch-07FFFh -ACONST=00h-07h,0Ch-07FFFh \
@@ -27,15 +27,15 @@ Machine type is 18F4550
                 Name                               Link     Load   Length Selector   Space Scale
 build/default/production/newAsmTemplate2.o
                 config                           300000   300000        E        0       4
-                main_code                          7E24     7E24      1DC     3F12       0
-                intVec                             7E18     7E18        C     3F0C       0
+                main_code                          7E20     7E20      1E0     3F10       0
+                intVec                             7E14     7E14        C     3F0A       0
                 resetVec                              0        0        4        0       0
                 udata_acs                             0        0       18        0       1
 
 TOTAL           Name                               Link     Load   Length     Space
         CLASS   CODE           
-                main_code                          7E24     7E24      1DC         0
-                intVec                             7E18     7E18        C         0
+                main_code                          7E20     7E20      1E0         0
+                intVec                             7E14     7E14        C         0
                 resetVec                              0        0        4         0
 
         CLASS   CONST          
@@ -86,8 +86,8 @@ SEGMENTS        Name                           Load    Length   Top    Selector 
 
                 udata_acs                      000000  000018  000018         0       1  COMRAM  
                 resetVec                       000000  000004  000004         0       0  CODE    
-                intVec                         007E18  00000C  007E24      3F0C       0  CODE    
-                main_code                      007E24  0001DC  008000      3F12       0  CODE    
+                intVec                         007E14  00000C  007E20      3F0A       0  CODE    
+                main_code                      007E20  0001E0  008000      3F10       0  CODE    
 
 
 UNUSED ADDRESS RANGES
@@ -104,16 +104,16 @@ UNUSED ADDRESS RANGES
         BIGRAM           000004-0007FF              7FC
         BIGSFR           000F60-000FFF               A0
         CODE             000004-000007                4
-                         00000C-007E17             7E0C
+                         00000C-007E13             7E08
         COMRAM           000018-00005F               48
         CONST            000004-000007                4
-                         00000C-007E17             7E0C
+                         00000C-007E13             7E08
         EEDATA           F00000-F000FF              100
         IDLOC            200000-200007                8
-        MEDIUMCONST      000800-007E17             7618
+        MEDIUMCONST      000800-007E13             7614
         RAM              000060-0007FF              100
         SFR              000F60-000FFF               A0
-        SMALLCONST       000800-007E17              100
+        SMALLCONST       000800-007E13              100
 
                                   Symbol Table
 
